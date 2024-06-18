@@ -1,0 +1,43 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "GKModularGameplay",
+	"Description": "Gamekit Modular Gameplay Helper",
+	"Category": "Other",
+	"CreatedBy": "Pierre Delaunay",
+	"CreatedByURL": "https://gitlab.com/mischievousgame",
+	"DocsURL": "https://mischievousgame.gitlab.io/GKModularGameplay/",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/91c97c089e004ac69f8fd37566e8b449",
+	"SupportURL": "https://github.com/kiwi-lang/GKModularGameplay/issues",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GKModularGameplay",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Linux" ],
+			"PlatformAllowList": [
+				"Win64",
+				"Linux"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "UIExtension",
+			"Enabled": true
+		},
+		{
+			"Name": "GameFeatures",
+			"Enabled": true
+		},
+		{
+			"Name": "ModularGameplay",
+			"Enabled": true
+		}
+	]
+}
