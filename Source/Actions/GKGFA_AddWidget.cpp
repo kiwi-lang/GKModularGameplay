@@ -5,7 +5,7 @@
 
 //
 #include "GKGFA_WorldActionBase.h"
-#include "GKMHUD.h"
+#include "UI/GKMHUD.h"
 
 //
 #include "GameFramework/HUD.h"
