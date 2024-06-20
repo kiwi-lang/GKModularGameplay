@@ -30,6 +30,7 @@ public class GKModularGameplay : ModuleRules
                 "CommonLoadingScreen",  // Loading Screen
                 "CommonGame",           // UCommonActivatableWidget
                 "UIExtension",          // Add Widget Action
+                "AIModule",             // Generic Team Interface
             }
         );
 

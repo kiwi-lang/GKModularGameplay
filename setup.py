@@ -17,3 +17,14 @@ ForceTickLoadingScreenEvenInEditor=False
 # Add new viewport  DefaultEngine.ini
 [/Script/Engine.Engine]
 GameViewportClientClassName=/Script/GKModularGameplay.GKMGameViewportClient
+
+
+# Add Asset Manager DefaultGame.ini
+[/Script/LyraGame.LyraUIManagerSubsystem]
+DefaultUIPolicyClass=/Game/UI/B_LyraUIPolicy.B_LyraUIPolicy_C
+
+
+# Add new viewport  DefaultEngine.ini
+[/Script/Engine.Engine]
+LocalPlayerClassName=/Script/LyraGame.LyraLocalPlayer
+ 
