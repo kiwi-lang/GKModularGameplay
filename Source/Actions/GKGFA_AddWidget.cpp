@@ -152,7 +152,9 @@ void UGKGFA_AddWidgets::AddWidgets(AActor* Actor, FPerContextData& ActiveData)
 
 		for (const FGKMHUDLayoutRequest& Entry : Layout)
 		{
-			if (TSubclassOf<UCommonActivatableWidget> ConcreteWidgetClass = Entry.LayoutClass.Get())
+			UClass* FullyLoaded = Entry.LayoutClass.LoadSynchronous();
+
+			if (TSubclassOf<UCommonActivatableWidget> ConcreteWidgetClass = FullyLoaded)
 			{
 				ActorData.LayoutsAdded.Add(UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer, Entry.LayerID, ConcreteWidgetClass));
 			}
