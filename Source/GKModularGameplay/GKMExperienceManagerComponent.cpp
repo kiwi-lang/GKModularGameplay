@@ -348,8 +348,43 @@ void UGKMExperienceManagerComponent::OnExperienceFullLoadCompleted()
 			}
 		}
 	};
-
+#define WITH_OLD_ACTIONS 0
+#if WITH_OLD_ACTIONS
 	ActivateListOfActions(CurrentExperience->Actions);
+#endif
+
+	//*
+#define TMAP_ACTIONS 0
+#define TARRAY_ACTIONS 1
+#if TMAP_ACTIONS
+	using NameSectionPair = TPair<FName, FGKMGameFeatureActionSection>;
+	TArray<NameSectionPair> Sections = CurrentExperience->Sections.Array();
+
+	Sections.Sort([](NameSectionPair const& Item) {
+		return Item.Value.InsertionOrder;
+	});
+
+	TArray<UGameFeatureAction*> SectionActions;
+	for (NameSectionPair const& Item : Sections) {
+		for (FGKMGameFeatureAction const& Action : Item.Value.Actions) {
+			SectionActions.Add(Action.Action);
+		}
+	}
+	ActivateListOfActions(SectionActions);
+
+#elif TARRAY_ACTIONS
+	TArray<UGameFeatureAction*> SectionActions;
+	for(FGKMGameFeatureActionSection const& Section: CurrentExperience->Sections) {
+		for(FGKMGameFeatureAction const& Action: Section.Value) {
+			SectionActions.Add(Action.Value);
+		}
+	}
+	ActivateListOfActions(SectionActions);
+#endif
+#undef TARRAY_ACTIONS
+#undef TMAP_ACTIONS
+	//*/
+
 	/*
 	for (const TObjectPtr<UGKMExperienceActionSet>& ActionSet : CurrentExperience->ActionSets)
 	{
@@ -438,9 +473,19 @@ void UGKMExperienceManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayR
 				}
 			}
 		};
-
+#if WITH_OLD_ACTIONS
 		DeactivateListOfActions(CurrentExperience->Actions);
-		
+#endif
+#undef WITH_OLD_ACTIONS
+
+		TArray<UGameFeatureAction*> SectionActions;
+		for (FGKMGameFeatureActionSection const& Section : CurrentExperience->Sections) {
+			for (FGKMGameFeatureAction const& Action : Section.Value) {
+				SectionActions.Add(Action.Value);
+			}
+		}
+		DeactivateListOfActions(SectionActions);
+
 		/*
 		for (const TObjectPtr<UGKMExperienceActionSet>& ActionSet : CurrentExperience->ActionSets)
 		{

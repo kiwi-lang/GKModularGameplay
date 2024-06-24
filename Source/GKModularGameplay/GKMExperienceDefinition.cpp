@@ -14,6 +14,18 @@
 
 #define LOCTEXT_NAMESPACE "GKMSystem"
 
+
+namespace {
+	int _InsertionOrderCounter() {
+		static int i = 0;
+		return i++;
+	}
+}
+
+FGKMGameFeatureActionSection::FGKMGameFeatureActionSection() {
+	InsertionOrder = _InsertionOrderCounter();
+}
+
 UGKMExperienceDefinition::UGKMExperienceDefinition()
 {
 }
@@ -23,6 +35,9 @@ EDataValidationResult UGKMExperienceDefinition::IsDataValid(FDataValidationConte
 {
 	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
 
+
+#define WITH_OLD_ACTIONS 0
+#if WITH_OLD_ACTIONS
 	int32 EntryIndex = 0;
 	for (const UGameFeatureAction* Action : Actions)
 	{
@@ -38,6 +53,29 @@ EDataValidationResult UGKMExperienceDefinition::IsDataValid(FDataValidationConte
 		}
 
 		++EntryIndex;
+	}
+#endif
+
+
+	int32 EntryIndex = 0;
+	for (FGKMGameFeatureActionSection const& Section : Sections)
+	{
+		for (FGKMGameFeatureAction const& ActionItem : Section.Value) {
+			UGameFeatureAction const* Action = ActionItem.Value;
+
+			if (Action)
+			{
+				EDataValidationResult ChildResult = Action->IsDataValid(Context);
+				Result = CombineDataValidationResults(Result, ChildResult);
+			}
+			else
+			{
+				Result = EDataValidationResult::Invalid;
+				Context.AddError(FText::Format(LOCTEXT("ActionEntryIsNull", "Null entry at index {0} in Actions"), FText::AsNumber(EntryIndex)));
+			}
+
+			++EntryIndex;
+		}
 	}
 
 	// Make sure users didn't subclass from a BP of this (it's fine and expected to subclass once in BP, just not twice)
@@ -71,6 +109,7 @@ void UGKMExperienceDefinition::UpdateAssetBundleData()
 {
 	Super::UpdateAssetBundleData();
 
+#if WITH_OLD_ACTIONS
 	for (UGameFeatureAction* Action : Actions)
 	{
 		if (Action)
@@ -78,8 +117,21 @@ void UGKMExperienceDefinition::UpdateAssetBundleData()
 			Action->AddAdditionalAssetBundleData(AssetBundleData);
 		}
 	}
+#endif
+
+	for (FGKMGameFeatureActionSection& Section : Sections)
+	{
+		for (FGKMGameFeatureAction& ActionItem : Section.Value) {
+			UGameFeatureAction* Action = ActionItem.Value;
+			if (Action) {
+				Action->AddAdditionalAssetBundleData(AssetBundleData);
+			}
+		}
+	}
+
 }
 #endif // WITH_EDITORONLY_DATA
 
 #undef LOCTEXT_NAMESPACE
 
+#undef WITH_OLD_ACTIONS

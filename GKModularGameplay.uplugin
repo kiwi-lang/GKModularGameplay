@@ -24,6 +24,16 @@
 				"Win64",
 				"Linux"
 			]
+		},
+		{
+			"Name": "GKModularGameplayEd",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Linux" ],
+			"PlatformAllowList": [
+				"Win64",
+				"Linux"
+			]
 		}
 	],
 	"Plugins": [
