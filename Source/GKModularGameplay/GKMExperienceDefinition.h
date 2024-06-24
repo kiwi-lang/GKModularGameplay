@@ -91,12 +91,13 @@ public:
 	// Why we already have Features & Actions
 	// List of additional action sets to compose into this experience
 	// UPROPERTY(EditDefaultsOnly, Category=Gameplay)
-	// TArray<TObjectPtr<UGKMExperienceActionSet>> ActionSets;
+	//TArray<TObjectPtr<UGKMExperienceActionSet>> ActionSets;
 
 
+	// This looks too ugly
 	// List of actions to perform as this experience is loaded/activated/deactivated/unloaded
-	// UPROPERTY(EditDefaultsOnly, Instanced, Category="Actions")
-	// TArray<TObjectPtr<UGameFeatureAction>> Actions;
+	UPROPERTY(EditDefaultsOnly, Instanced, Category="Actions")
+	TArray<TObjectPtr<UGameFeatureAction>> Actions;
 
 	// Feature Tree to enable
 	UPROPERTY(EditDefaultsOnly, Category = "Actions")
