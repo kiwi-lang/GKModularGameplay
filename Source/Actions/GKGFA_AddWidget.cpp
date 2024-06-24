@@ -163,7 +163,9 @@ void UGKGFA_AddWidgets::AddWidgets(AActor* Actor, FPerContextData& ActiveData)
 		UUIExtensionSubsystem* ExtensionSubsystem = HUD->GetWorld()->GetSubsystem<UUIExtensionSubsystem>();
 		for (const FGKMHUDElementEntry& Entry : Widgets)
 		{
-			ActorData.ExtensionHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(Entry.SlotID, LocalPlayer, Entry.WidgetClass.Get(), -1));
+			UClass* FullyLoaded = Entry.WidgetClass.LoadSynchronous();
+
+			ActorData.ExtensionHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(Entry.SlotID, LocalPlayer, FullyLoaded, -1));
 		}
 	}
 }
