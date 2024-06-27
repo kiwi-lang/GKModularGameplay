@@ -18,11 +18,11 @@ TOptional<FUIInputConfig> UGKMActivatableWidget::GetDesiredInputConfig() const
 	switch (InputConfig)
 	{
 	case EGKMWidgetInputMode::GameAndMenu:
-		return FUIInputConfig(ECommonInputMode::All, GameMouseCaptureMode);
+		return FUIInputConfig(ECommonInputMode::All, GameMouseCaptureMode, false);
 	case EGKMWidgetInputMode::Game:
-		return FUIInputConfig(ECommonInputMode::Game, GameMouseCaptureMode);
+		return FUIInputConfig(ECommonInputMode::Game, GameMouseCaptureMode, false);
 	case EGKMWidgetInputMode::Menu:
-		return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
+		return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture, false);
 	case EGKMWidgetInputMode::Default:
 	default:
 		return TOptional<FUIInputConfig>();
