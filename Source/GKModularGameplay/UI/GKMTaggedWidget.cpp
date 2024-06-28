@@ -20,6 +20,7 @@
 UGKMTaggedWidget::UGKMTaggedWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	bShownByTags = false;
 }
 
 
@@ -66,7 +67,7 @@ class UAbilitySystemComponent* FindAbilitySystemComponent(UUserWidget* Widget) {
     return nullptr;
 }
 
-void UGKMTaggedWidget::ShowWidgetWithTag(UAbilitySystemComponent* ASC, FGameplayTag Tag) {
+void UGKMTaggedWidget::ShowWidgetWitHiddenTag(UAbilitySystemComponent* ASC, FGameplayTag Tag) {
 	if (ASC) {
 		ASC->RemoveLooseGameplayTag(Tag);
 		return;
@@ -74,7 +75,7 @@ void UGKMTaggedWidget::ShowWidgetWithTag(UAbilitySystemComponent* ASC, FGameplay
 	GKMGP_WARNING(TEXT("UGKMTaggedWidget: UAbilitySystemComponent is null"));
 }
 
-void UGKMTaggedWidget::HideWidgetWithTag(UAbilitySystemComponent* ASC, FGameplayTag Tag) {
+void UGKMTaggedWidget::HideWidgetWithHiddenTag(UAbilitySystemComponent* ASC, FGameplayTag Tag) {
 	if (ASC) {
 		ASC->AddLooseGameplayTag(Tag);
 		return;
@@ -82,17 +83,49 @@ void UGKMTaggedWidget::HideWidgetWithTag(UAbilitySystemComponent* ASC, FGameplay
 	GKMGP_WARNING(TEXT("UGKMTaggedWidget: UAbilitySystemComponent is null"));
 }
 
-void UGKMTaggedWidget::ToggleWidgetVisibility(class UAbilitySystemComponent* ASC, FGameplayTag HiddenTag) {
+
+void UGKMTaggedWidget::ShowWidgetWitShownTag(UAbilitySystemComponent* ASC, FGameplayTag Tag) {
+	if (ASC) {
+		ASC->AddLooseGameplayTag(Tag);
+		return;
+	}
+	GKMGP_WARNING(TEXT("UGKMTaggedWidget: UAbilitySystemComponent is null"));
+}
+
+void UGKMTaggedWidget::HideWidgetWithShownTag(UAbilitySystemComponent* ASC, FGameplayTag Tag) {
+	if (ASC) {
+		ASC->RemoveLooseGameplayTag(Tag);
+		return;
+	}
+	GKMGP_WARNING(TEXT("UGKMTaggedWidget: UAbilitySystemComponent is null"));
+}
+
+void UGKMTaggedWidget::ToggleWidgetVisibilityWithHiddenTag(class UAbilitySystemComponent* ASC, FGameplayTag HiddenTag) {
 	if (ASC) {
 		if (ASC->HasMatchingGameplayTag(HiddenTag)) {
-			ShowWidgetWithTag(ASC, HiddenTag);
-		} else {
-			HideWidgetWithTag(ASC, HiddenTag);
+			ShowWidgetWitHiddenTag(ASC, HiddenTag);
+		}
+		else {
+			HideWidgetWithHiddenTag(ASC, HiddenTag);
 		}
 		return;
 	}
 	GKMGP_WARNING(TEXT("UGKMTaggedWidget: UAbilitySystemComponent is null"));
 }
+
+void UGKMTaggedWidget::ToggleWidgetVisibilityWithShownTag(class UAbilitySystemComponent* ASC, FGameplayTag ShownTag) {
+	if (ASC) {
+		if (!ASC->HasMatchingGameplayTag(ShownTag)) {
+			ShowWidgetWitShownTag(ASC, ShownTag);
+		}
+		else {
+			HideWidgetWithShownTag(ASC, ShownTag);
+		}
+		return;
+	}
+	GKMGP_WARNING(TEXT("UGKMTaggedWidget: UAbilitySystemComponent is null"));
+}
+
 
 void UGKMTaggedWidget::NativeConstruct()
 {
@@ -107,26 +140,52 @@ void UGKMTaggedWidget::NativeConstruct()
 		AbilitySystemComponent = FindAbilitySystemComponent(this);
 		
 		if (AbilitySystemComponent) {
-			for(FGameplayTag Tag: HiddenByTags) {
-				DelegateHandles.Add(AbilitySystemComponent->RegisterGameplayTagEvent(
-					Tag,
-					EGameplayTagEventType::NewOrRemoved
-				).AddUObject(this, &UGKMTaggedWidget::OnWatchedTagsChanged));
+			if (bShownByTags) {
+				for (FGameplayTag Tag : ShownByTags) {
+					DelegateHandles.Add(AbilitySystemComponent->RegisterGameplayTagEvent(
+						Tag,
+						EGameplayTagEventType::NewOrRemoved
+					).AddUObject(this, &UGKMTaggedWidget::OnWatchedTagsChanged));
+				}
 			}
+			else {
+				for(FGameplayTag Tag: HiddenByTags) {
+					DelegateHandles.Add(AbilitySystemComponent->RegisterGameplayTagEvent(
+						Tag,
+						EGameplayTagEventType::NewOrRemoved
+					).AddUObject(this, &UGKMTaggedWidget::OnWatchedTagsChanged));
+				}
+			}
+
 		}
 
 		// Set our initial visibility value (checking the tags, etc...)
 		SetVisibility(GetVisibility());
 
-		if (HiddenByTags.Num() == 1) {
-			FGameplayTag Tag = HiddenByTags.GetByIndex(0);
+		if (bShownByTags) {
+			if (ShownByTags.Num() == 1) {
+				FGameplayTag Tag = ShownByTags.GetByIndex(0);
 
-			if (bInitiallyVisible && HasHiddenTags()) {
-				UGKMTaggedWidget::ToggleWidgetVisibility(AbilitySystemComponent, Tag);
+				if (bInitiallyVisible && !HasShownTags()) {
+					UGKMTaggedWidget::ToggleWidgetVisibilityWithShownTag(AbilitySystemComponent, Tag);
+				}
+
+				if (!bInitiallyVisible && HasShownTags()) {
+					UGKMTaggedWidget::ToggleWidgetVisibilityWithShownTag(AbilitySystemComponent, Tag);
+				}
 			}
+		}
+		else {
+			if (HiddenByTags.Num() == 1) {
+				FGameplayTag Tag = HiddenByTags.GetByIndex(0);
 
-			if (!bInitiallyVisible && !HasHiddenTags()) {
-				UGKMTaggedWidget::ToggleWidgetVisibility(AbilitySystemComponent, Tag);
+				if (bInitiallyVisible && HasHiddenTags()) {
+					UGKMTaggedWidget::ToggleWidgetVisibilityWithHiddenTag(AbilitySystemComponent, Tag);
+				}
+
+				if (!bInitiallyVisible && !HasHiddenTags()) {
+					UGKMTaggedWidget::ToggleWidgetVisibilityWithHiddenTag(AbilitySystemComponent, Tag);
+				}
 			}
 		}
 	}
@@ -136,12 +195,25 @@ void UGKMTaggedWidget::NativeDestruct()
 {
 	if (!IsDesignTime())
 	{
-		if (AbilitySystemComponent) {
-			for (FGameplayTag Tag : HiddenByTags) {
-				AbilitySystemComponent->RegisterGameplayTagEvent(
-					Tag,
-					EGameplayTagEventType::NewOrRemoved
-				).RemoveAll(this);
+		if (bShownByTags) {
+			if (AbilitySystemComponent) {
+				for (FGameplayTag Tag : ShownByTags) {
+					AbilitySystemComponent->RegisterGameplayTagEvent(
+						Tag,
+						EGameplayTagEventType::NewOrRemoved
+					).RemoveAll(this);
+				}
+			}
+		} 
+		else 
+		{
+			if (AbilitySystemComponent) {
+				for (FGameplayTag Tag : HiddenByTags) {
+					AbilitySystemComponent->RegisterGameplayTagEvent(
+						Tag,
+						EGameplayTagEventType::NewOrRemoved
+					).RemoveAll(this);
+				}
 			}
 		}
 	}
@@ -175,14 +247,8 @@ void UGKMTaggedWidget::SetVisibility(ESlateVisibility InVisibility)
 		GKMGP_LOG(TEXT("UGKMTaggedWidget: does not want to be visible"));
 	}
 
-	const bool bHasHiddenTags = HasHiddenTags();
 
-	// Actually apply the visibility
-	const ESlateVisibility DesiredVisibility = (bWantsToBeVisible && !bHasHiddenTags) ? ShownVisibility : HiddenVisibility;
-	if (GetVisibility() != DesiredVisibility)
-	{
-		Super::SetVisibility(DesiredVisibility);
-	}
+	OnWatchedTagsChanged(FGameplayTag(), 0);
 }
 
 bool UGKMTaggedWidget::HasHiddenTags() {
@@ -192,15 +258,35 @@ bool UGKMTaggedWidget::HasHiddenTags() {
 	return false;
 }
 
+bool UGKMTaggedWidget::HasShownTags() {
+	if (AbilitySystemComponent) {
+		return AbilitySystemComponent->HasAnyMatchingGameplayTags(ShownByTags);
+	}
+	return false;
+}
+
 void UGKMTaggedWidget::OnWatchedTagsChanged(FGameplayTag const Tag, int32 Count)
 {
-	const bool bHasHiddenTags = HasHiddenTags();
 
-	// Actually apply the visibility
-	const ESlateVisibility DesiredVisibility = (bWantsToBeVisible && !bHasHiddenTags) ? ShownVisibility : HiddenVisibility;
-	if (GetVisibility() != DesiredVisibility)
-	{
-		Super::SetVisibility(DesiredVisibility);
+	if (bShownByTags) {
+		const bool bHasShownByTags = HasShownTags();
+
+		// Actually apply the visibility
+		const ESlateVisibility DesiredVisibility = (bWantsToBeVisible && bHasShownByTags) ? ShownVisibility : HiddenVisibility;
+		if (GetVisibility() != DesiredVisibility)
+		{
+			Super::SetVisibility(DesiredVisibility);
+		}
+	}
+	else {
+		const bool bHasHiddenTags = HasHiddenTags();
+
+		// Actually apply the visibility
+		const ESlateVisibility DesiredVisibility = (bWantsToBeVisible && !bHasHiddenTags) ? ShownVisibility : HiddenVisibility;
+		if (GetVisibility() != DesiredVisibility)
+		{
+			Super::SetVisibility(DesiredVisibility);
+		}
 	}
 }
 

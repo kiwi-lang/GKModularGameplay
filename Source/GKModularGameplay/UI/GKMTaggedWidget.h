@@ -30,14 +30,22 @@ public:
 	//~End of UUserWidget interface
 
 	UFUNCTION(BlueprintCallable, Category="Widget")
-	static void ShowWidgetWithTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag HiddenTag);
+	static void ShowWidgetWitHiddenTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag HiddenTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Widget")
-	static void HideWidgetWithTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag HiddenTag);
+	static void HideWidgetWithHiddenTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag HiddenTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Widget")
-	static void ToggleWidgetVisibility(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag HiddenTag);
+	static void ShowWidgetWitShownTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag ShownTag);
 
+	UFUNCTION(BlueprintCallable, Category = "Widget")
+	static void HideWidgetWithShownTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag ShownTag);
+
+	UFUNCTION(BlueprintCallable, Category = "Widget")
+	static void ToggleWidgetVisibilityWithHiddenTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag HiddenTag);
+
+	UFUNCTION(BlueprintCallable, Category = "Widget")
+	static void ToggleWidgetVisibilityWithShownTag(class UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag ShownTag);
 
 protected:
 
@@ -45,9 +53,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
 	bool bInitiallyVisible;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+	bool bShownByTags;
+
 	/** If the owning player has any of these tags, this widget will be hidden (using HiddenVisibility) */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD", meta = (EditCondition = "!bShownByTags"))
 	FGameplayTagContainer HiddenByTags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD", meta = (EditCondition = "bShownByTags"))
+	FGameplayTagContainer ShownByTags;
 
 	/** The visibility to use when this widget is shown (not hidden by gameplay tags). */
 	UPROPERTY(EditAnywhere, Category = "HUD")
@@ -61,6 +75,8 @@ protected:
 	bool bWantsToBeVisible = true;
 
 	bool HasHiddenTags();
+
+	bool HasShownTags();
 
 private:
 	void OnWatchedTagsChanged(const FGameplayTag Tag, int32 Count);
