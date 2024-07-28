@@ -10,6 +10,13 @@
 #include "GKMAssetManager.h"
 #include "GKMExperienceDefinition.h"
 #include "GKMPlayerSpawningManagerComponent.h"
+#include "GKMGameState.h"
+#include "UI/GKMHUD.h"
+
+// Modular
+#include "ModularPlayerController.h"
+#include "ModularPlayerState.h"
+#include "ModularPawn.h"
 
 // Unreal Engine
 #include "Kismet/GameplayStatics.h"
@@ -18,13 +25,13 @@
 AGKMGameMode::AGKMGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	// GameStateClass = ALyraGameState::StaticClass();
-	// GameSessionClass = ALyraGameSession::StaticClass();
-	// PlayerControllerClass = ALyraPlayerController::StaticClass();
-	// ReplaySpectatorPlayerControllerClass = ALyraReplayPlayerController::StaticClass();
-	// PlayerStateClass = ALyraPlayerState::StaticClass();
-	// DefaultPawnClass = ALyraCharacter::StaticClass();
-	// HUDClass = ALyraHUD::StaticClass();
+	GameStateClass = AGKMGameState::StaticClass();
+	// GameSessionClass = AGKMGameSession::StaticClass();
+	PlayerControllerClass = AModularPlayerController::StaticClass();
+	// ReplaySpectatorPlayerControllerClass = AGKMReplayPlayerController::StaticClass();
+	PlayerStateClass = AModularPlayerState::StaticClass();
+	DefaultPawnClass = AModularPawn::StaticClass();
+	HUDClass = AGKMHUD::StaticClass();
 
 	/*
 	DefaultExperienceId = FPrimaryAssetId(
