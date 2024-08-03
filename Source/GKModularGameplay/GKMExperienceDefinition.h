@@ -102,4 +102,13 @@ public:
 	// Feature Tree to enable
 	UPROPERTY(EditDefaultsOnly, Category = "Actions")
 	TArray<FGKMGameFeatureActionSection> Sections;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Actions")
+	TArray<FGKMGameFeatureActionSection> ExperienceLoaded_High;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Actions")
+	TArray<FGKMGameFeatureActionSection> ExperienceLoaded_Normal;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Actions")
+	TArray<FGKMGameFeatureActionSection> ExperienceLoaded_Low;
 };

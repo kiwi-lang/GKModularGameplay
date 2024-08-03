@@ -4,6 +4,9 @@
 #include "GKMPlayerSpawningManagerComponent.h"
 
 //
+#include "GKMLog.h"
+
+//
 #include "GameFramework/PlayerState.h"
 #include "EngineUtils.h"
 #include "Engine/PlayerStartPIE.h"
@@ -220,6 +223,7 @@ bool UGKMPlayerSpawningManagerComponent::ControllerCanRestart_Implementation(ACo
 
 void UGKMPlayerSpawningManagerComponent::FinishRestartPlayer_Implementation(AController* NewPlayer, const FRotator& StartRotation)
 {
+	GKMGP_LOG(TEXT("FinishRestartPlayer"));
 }
 
 //================================================================

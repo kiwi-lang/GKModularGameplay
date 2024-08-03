@@ -181,6 +181,9 @@ void AGKMGameMode::OnExperienceLoaded(const UGKMExperienceDefinition* CurrentExp
 	// Spawn any players that are already attached
 	// @TODO: Here we're handling only *player* controllers, but in GetDefaultPawnClassForController_Implementation we skipped all controllers
 	// GetDefaultPawnClassForController_Implementation might only be getting called for players anyways
+	
+	
+	// Experience is loaded, restart the player
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		APlayerController* PC = Cast<APlayerController>(*Iterator);
@@ -192,6 +195,8 @@ void AGKMGameMode::OnExperienceLoaded(const UGKMExperienceDefinition* CurrentExp
 			}
 		}
 	}
+
+	// Player is ready, add widget handling here
 }
 
 bool AGKMGameMode::IsExperienceLoaded() const

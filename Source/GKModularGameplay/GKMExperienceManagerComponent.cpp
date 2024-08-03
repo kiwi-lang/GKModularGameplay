@@ -61,6 +61,10 @@ UGKMExperienceManagerComponent::UGKMExperienceManagerComponent(const FObjectInit
 	: Super(ObjectInitializer)
 {
 	SetIsReplicatedByDefault(true);
+	Barrier = 0;
+	bHigh = false;
+	bNormal = false;
+	bLow = false;
 }
 
 void UGKMExperienceManagerComponent::SetCurrentExperience(FPrimaryAssetId ExperienceId)
@@ -397,19 +401,90 @@ void UGKMExperienceManagerComponent::OnExperienceFullLoadCompleted()
 
 	LoadState = EGKMExperienceLoadState::Loaded;
 
-	OnExperienceLoaded_HighPriority.Broadcast(CurrentExperience);
-	OnExperienceLoaded_HighPriority.Clear();
-
-	OnExperienceLoaded.Broadcast(CurrentExperience);
-	OnExperienceLoaded.Clear();
-
-	OnExperienceLoaded_LowPriority.Broadcast(CurrentExperience);
-	OnExperienceLoaded_LowPriority.Clear();
-
 	// Apply any necessary scalability settings
 #if !UE_SERVER
 	// UGKMSettingsLocal::Get()->OnExperienceLoaded();
 #endif
+
+	// Wait for server to finish
+	Barrier = 1;
+	OnRep_Barrier();
+}
+
+
+void UGKMExperienceManagerComponent::OnRep_Barrier() {
+	if (Barrier >= 1 && !bHigh) {
+		GKMGP_LOG(TEXT("Trigger OnExperienceLoaded_High %d"), Barrier);
+
+		ExperienceLoaded_High();
+		OnExperienceLoaded_HighPriority.Broadcast(CurrentExperience);
+		OnExperienceLoaded_HighPriority.Clear();
+		bHigh = true;
+	}
+
+	if (Barrier >= 2 && !bNormal) {
+		GKMGP_LOG(TEXT("Trigger OnExperienceLoaded_Normal %d"), Barrier);
+
+		ExperienceLoaded_Normal();
+		OnExperienceLoaded.Broadcast(CurrentExperience);
+		OnExperienceLoaded.Clear();
+		bNormal = true;
+	}
+
+	if (Barrier >= 3 && !bLow) {
+		GKMGP_LOG(TEXT("Trigger OnExperienceLoaded_Low %d"), Barrier);
+
+		ExperienceLoaded_Low();
+		OnExperienceLoaded_LowPriority.Broadcast(CurrentExperience);
+		OnExperienceLoaded_LowPriority.Clear();
+		bLow = true;
+	}
+
+	if (Barrier < 3 && GetOwner()->GetNetMode() != NM_Client) {
+		Barrier += 1;
+		OnRep_Barrier();
+	}
+}
+
+void UGKMExperienceManagerComponent::ExperienceLoaded_High() {
+
+}
+void UGKMExperienceManagerComponent::ExperienceLoaded_Normal() {
+
+}
+void UGKMExperienceManagerComponent::ExperienceLoaded_Low() {
+	FGameFeatureActivatingContext Context;
+
+	// Only apply to our specific world context if set
+	const FWorldContext* ExistingWorldContext = GEngine->GetWorldContextFromWorld(GetWorld());
+	if (ExistingWorldContext)
+	{
+		Context.SetRequiredWorldContextHandle(ExistingWorldContext->ContextHandle);
+	}
+
+	auto ActivateListOfActions = [&Context](const TArray<UGameFeatureAction*>& ActionList)
+	{
+		for (UGameFeatureAction* Action : ActionList)
+		{
+			if (Action != nullptr)
+			{
+				//@TODO: The fact that these don't take a world are potentially problematic in client-server PIE
+				// The current behavior matches systems like gameplay tags where loading and registering apply to the entire process,
+				// but actually applying the results to actors is restricted to a specific world
+				Action->OnGameFeatureRegistering();
+				Action->OnGameFeatureLoading();
+				Action->OnGameFeatureActivating(Context);
+			}
+		}
+	};
+
+	TArray<UGameFeatureAction*> SectionActions;
+	for (FGKMGameFeatureActionSection const& Section : CurrentExperience->ExperienceLoaded_Low) {
+		for (FGKMGameFeatureAction const& Action : Section.Value) {
+			SectionActions.Add(Action.Value);
+		}
+	}
+	ActivateListOfActions(SectionActions);
 }
 
 void UGKMExperienceManagerComponent::OnActionDeactivationCompleted()
@@ -428,6 +503,7 @@ void UGKMExperienceManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ThisClass, CurrentExperience);
+	DOREPLIFETIME(ThisClass, Barrier);
 }
 
 void UGKMExperienceManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)

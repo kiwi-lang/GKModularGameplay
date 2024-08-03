@@ -73,6 +73,9 @@ private:
 	UFUNCTION()
 	void OnRep_CurrentExperience();
 
+	UFUNCTION()
+	void OnRep_Barrier();
+
 	void StartExperienceLoad();
 	void OnExperienceLoadComplete();
 	void OnGameFeaturePluginLoadComplete(const UE::GameFeatures::FResult& Result);
@@ -80,6 +83,10 @@ private:
 
 	void OnActionDeactivationCompleted();
 	void OnAllActionsDeactivated();
+
+	void ExperienceLoaded_High();
+	void ExperienceLoaded_Normal();
+	void ExperienceLoaded_Low();
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentExperience)
@@ -92,6 +99,18 @@ private:
 
 	int32 NumObservedPausers = 0;
 	int32 NumExpectedPausers = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Barrier)
+	int Barrier;
+
+	UPROPERTY(Transient)
+	bool bHigh;
+
+	UPROPERTY(Transient)
+	bool bNormal;
+
+	UPROPERTY(Transient)
+	bool bLow;
 
 	/**
 	 * Delegate called when the experience has finished loading just before others
