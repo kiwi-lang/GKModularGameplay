@@ -6,6 +6,7 @@
 //
 #include "GKGFA_WorldActionBase.h"
 #include "UI/GKMHUD.h"
+#include "GKMLog.h"
 
 //
 #include "GameFramework/HUD.h"
@@ -156,6 +157,7 @@ void UGKGFA_AddWidgets::AddWidgets(AActor* Actor, FPerContextData& ActiveData)
 
 			if (TSubclassOf<UCommonActivatableWidget> ConcreteWidgetClass = FullyLoaded)
 			{
+				GKMGP_LOG(TEXT("Pushing Layout to %s"), *Entry.LayerID.GetTagName().ToString());
 				ActorData.LayoutsAdded.Add(UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer, Entry.LayerID, ConcreteWidgetClass));
 			}
 		}
@@ -165,6 +167,7 @@ void UGKGFA_AddWidgets::AddWidgets(AActor* Actor, FPerContextData& ActiveData)
 		{
 			UClass* FullyLoaded = Entry.WidgetClass.LoadSynchronous();
 
+			GKMGP_LOG(TEXT("Add Widget to %s"), *Entry.SlotID.GetTagName().ToString());
 			ActorData.ExtensionHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(Entry.SlotID, LocalPlayer, FullyLoaded, -1));
 		}
 	}
