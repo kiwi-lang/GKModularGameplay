@@ -36,6 +36,8 @@ struct FGKMHUDElementEntry
 {
 	GENERATED_BODY()
 
+	FGKMHUDElementEntry();
+
 	// The widget to spawn
 	UPROPERTY(EditAnywhere, Category=UI, meta=(AssetBundles="Client"))
 	TSoftClassPtr<UUserWidget> WidgetClass;
@@ -43,6 +45,10 @@ struct FGKMHUDElementEntry
 	// The slot ID where we should place this widget
 	UPROPERTY(EditAnywhere, Category = UI)
 	FGameplayTag SlotID;
+
+	//! Remove previous extension if exists
+	UPROPERTY(EditAnywhere, Category = UI)
+	bool bUnique;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -85,6 +91,7 @@ private:
 	{
 		TArray<TWeakObjectPtr<UCommonActivatableWidget>> LayoutsAdded;
 		TArray<FUIExtensionHandle> ExtensionHandles;
+		TMap<FGameplayTag, FUIExtensionHandle> ExtendedEntryPoints;
 	};
 
 	struct FPerContextData

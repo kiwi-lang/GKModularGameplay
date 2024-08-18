@@ -27,6 +27,11 @@
 //////////////////////////////////////////////////////////////////////
 // UGKGFA_AddWidgets
 
+
+FGKMHUDElementEntry::FGKMHUDElementEntry() {
+	bUnique = true;
+}
+
 void UGKGFA_AddWidgets::OnGameFeatureDeactivating(FGameFeatureDeactivatingContext& Context)
 {
 	Super::OnGameFeatureDeactivating(Context);
@@ -167,8 +172,19 @@ void UGKGFA_AddWidgets::AddWidgets(AActor* Actor, FPerContextData& ActiveData)
 		{
 			UClass* FullyLoaded = Entry.WidgetClass.LoadSynchronous();
 
+			// Remove previous widget if it already exists
+			auto* PreviousHandle = ActorData.ExtendedEntryPoints.Find(Entry.SlotID);
+			if (Entry.bUnique && PreviousHandle != nullptr) {
+				PreviousHandle->Unregister();
+			}
+			else if (PreviousHandle != nullptr) {
+				GKMGP_LOG(TEXT("A Widget already exists for %s"), *Entry.SlotID.GetTagName().ToString());
+			}
+
 			GKMGP_LOG(TEXT("Add Widget to %s"), *Entry.SlotID.GetTagName().ToString());
-			ActorData.ExtensionHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(Entry.SlotID, LocalPlayer, FullyLoaded, -1));
+			auto Handle = ExtensionSubsystem->RegisterExtensionAsWidgetForContext(Entry.SlotID, LocalPlayer, FullyLoaded, -1);
+			ActorData.ExtendedEntryPoints.Add(Entry.SlotID, Handle);
+			ActorData.ExtensionHandles.Add(Handle);
 		}
 	}
 }
