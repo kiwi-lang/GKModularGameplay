@@ -29,7 +29,7 @@
 
 
 FGKMHUDElementEntry::FGKMHUDElementEntry() {
-	bUnique = true;
+	bAddOrReplace = true;
 }
 
 void UGKGFA_AddWidgets::OnGameFeatureDeactivating(FGameFeatureDeactivatingContext& Context)
@@ -174,7 +174,7 @@ void UGKGFA_AddWidgets::AddWidgets(AActor* Actor, FPerContextData& ActiveData)
 
 			// Remove previous widget if it already exists
 			auto* PreviousHandle = ActorData.ExtendedEntryPoints.Find(Entry.SlotID);
-			if (Entry.bUnique && PreviousHandle != nullptr) {
+			if (Entry.bAddOrReplace && PreviousHandle != nullptr) {
 				PreviousHandle->Unregister();
 			}
 			else if (PreviousHandle != nullptr) {

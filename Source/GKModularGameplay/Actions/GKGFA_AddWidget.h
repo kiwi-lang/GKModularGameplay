@@ -48,7 +48,7 @@ struct FGKMHUDElementEntry
 
 	//! Remove previous extension if exists
 	UPROPERTY(EditAnywhere, Category = UI)
-	bool bUnique;
+	bool bAddOrReplace;
 };
 
 //////////////////////////////////////////////////////////////////////
